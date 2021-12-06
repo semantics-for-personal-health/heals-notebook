@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   jupyter:
-    image: jupyter/minimal-notebook:2021-10-11
+    image: jupyter/scipy-notebook:2021-10-11
     ports:
       - 8888:8888
     volumes:
@@ -13,3 +13,6 @@ services:
     build: submodules/knowledge-services/fuzzy-entity-resolver
   kbqa-service:
     build: submodules/kbqa
+  mongo:
+    image: mongo:5.0.2-focal
+    restart: always
