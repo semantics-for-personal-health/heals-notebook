@@ -4,7 +4,7 @@ services:
   jupyter:
     image: jupyter/scipy-notebook:2021-10-11
     ports:
-      - 8888:8888
+      - 8789:8888
     volumes:
       - ./notebooks:/home/jovyan
       - ./personas:/home/jovyan/personas

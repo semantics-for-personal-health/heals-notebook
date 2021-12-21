@@ -4,12 +4,28 @@ A jupyter notebook demonstrating HEALS KBQA workflow.
 
 ## Requirements
 
+At least 8GB of RAM recommended.
+
+### Software
+
+* <a target="_blank" href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">Git</a>
 * <a target="_blank" href="https://docs.docker.com/get-docker/">Docker</a>
 * (Only necessary on Linux) <a target="_blank" href="https://docs.docker.com/compose/install/">Docker Compose</a>
 
+### (Mac and Windows) Docker Desktop Settings
+
+If you are running Docker Desktop on Mac or Windows, you will need to adjust container memory limits to be able to run KBQA.
+The default memory limit per container is typically 2GB while we recommend a limit of at least 6GB.
+
+Use the Resources menu in Docker Desktop settings to ensure memory limit is more than 6GB.
+Refer to the appropriate user manual for detailed instructions:
+
+* <a target="_blank" href="https://docs.docker.com/desktop/mac/">Mac</a>
+* <a target="_blank" href="https://docs.docker.com/desktop/windows/">Windows</a>
+
 ## Clone Project Submodules
 
-This project uses git submodules which are not fully downloaded with `git clone`.
+This project uses [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) which are not fully downloaded with `git clone`.
 
 Be sure that you are using an [ssh key linked to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 
@@ -33,4 +49,36 @@ In a terminal, navigate to the cloned project directory and run the following:
 docker-compose up
 ```
 
-The notebooks will be accessible on <http://localhost:8888>
+This will pull all necessary container images, perform build steps, and start all project containers.
+
+The initial build/startup process can take some time depending on your machine specs and internet connection.
+Expect up to 5-10 minutes.
+Startup should be complete when you see the following log from the kbqa container:
+
+``` txt
+heals-notebook-kbqa-service-1           | running "unix_signal:15 gracefully_kill_them_all" (master-start)...
+```
+
+The notebooks will be accessible on <http://localhost:8789>.
+
+The specific port used for notebooks can be set in `docker-compose.yml`.
+
+## Development
+
+If you are pulling new code, make sure to use the `--recurse-submodules` flag.
+
+``` sh
+git pull --recurse-submodules
+```
+
+To rebuild all containers:
+
+``` sh
+docker-compose build
+```
+
+or to rebuild and restart in one step:
+
+``` sh
+docker-compose up --build
+```
