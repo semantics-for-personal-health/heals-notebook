@@ -8,6 +8,8 @@ services:
     volumes:
       - ./notebooks:/home/jovyan
       - ./personas:/home/jovyan/personas
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
     command: ["start-notebook.sh", "--NotebookApp.token=''", "--NotebookApp.password=''"]
   fuzzy-entity-resolver:
     build: submodules/knowledge-services/fuzzy-entity-resolver
