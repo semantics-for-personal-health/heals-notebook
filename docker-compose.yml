@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   jupyter:
-    image: jupyter/scipy-notebook:2021-10-11
+    build: ./jupyter-docker
     ports:
       - 8789:8888
     volumes:
@@ -10,7 +10,7 @@ services:
       - ./personas:/home/jovyan/personas
     environment:
       - JUPYTER_ENABLE_LAB=yes
-    command: ["start-notebook.sh", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+    command: "entrypoint.sh"
   fuzzy-entity-resolver:
     build: submodules/knowledge-services/fuzzy-entity-resolver
   kbqa-service:

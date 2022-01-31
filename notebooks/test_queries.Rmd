@@ -1,0 +1,127 @@
+---
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
+
+```{python}
+import json
+
+def get_test_queries(line_nums):
+    if isinstance(line_nums, int):
+        line_nums = {line_nums}
+    line_nums = set(line_nums)
+    test_queries = []
+    with open('test_qas.json') as f:
+        line_num = 1
+        for line in f:
+            if line_num in line_nums:
+                test_queries.append(json.loads(line))
+                line_nums.remove(line_num)
+            if len(line_nums) == 0:
+                break
+            line_num += 1
+    return test_queries
+
+# q = get_test_queries(1)[0]
+# del q['origin_answers']
+# q
+```
+
+```{python}
+import requests
+ENTITY_RESOLVER_URL = "http://fuzzy-entity-resolver/resolve"
+
+def resolve_entity(entity):
+    entity_resp = requests.get(ENTITY_RESOLVER_URL, params={'query': entity}).json()
+    tags = entity_resp['tags']
+
+
+    # Filter out tags with low confidence
+    tags = [t for t in tags if t['confidence'] >= 0.9]
+    for t in tags:
+        t['confidence'] = 1
+    # print(tags)
+    return tags
+```
+
+```{python}
+import requests
+
+KBQA_URL = 'http://kbqa-service/HEALS/api/v1.0'#
+# Query KBQA using the entities and expanded query
+#
+
+def run_query(q):
+    print(f'asking query {q["qId"]}: {q["qOriginText"]}')
+    kbqa_query_data = {
+        "intent": "constraint",
+        "output": "N/A",
+        "question": q['qText'],
+        # we don't need to expand the query again
+        "skip_expansion": True,
+        "lookup_recipes": True,
+        "persona": q['persona'],
+        "entities": [tag for e in q['entities'] for tag in resolve_entity(e[0])],
+        "constrained_entities": q['persona']['constrained_entities'],
+        #"similar_recipes": similar_recipes
+    }
+    kbqa_resp = requests.post(f"{KBQA_URL}/kbqa", json=kbqa_query_data)
+    return kbqa_resp.json()
+
+```
+
+```{python}
+import os
+import re
+# query_set = {4,5,7,9}
+qline_regex = re.compile(r'^\s*(\d+)\s.*')
+query_nums = []
+for filename in os.listdir('./selected_questions'):
+    with open(f'./selected_questions/{filename}') as file:
+        for line in file:
+            m = qline_regex.match(line)
+            if m:
+                query_nums.append(int(m[1]))
+len(query_nums)
+```
+
+```{python}
+queries = get_test_queries(query_nums)
+for query in queries:
+    query['kbqa_answer'] = run_query(query)
+# queries[0]
+```
+
+```{python}
+results_markdown = "# test query results\n\n"
+
+for query in queries:
+    results_markdown += f"## {query['qId']}\n\n{query['qOriginText']}\n\n"
+    
+    for recipe in query['kbqa_answer']['answer_recipe_list']:
+        results_markdown += f"1. **{recipe['name']}**\n"
+        results_markdown += "| | |\n| --- | --- |\n"
+        for name, value in recipe['nutrients'].items():
+            results_markdown += f"| {name} | {value} |\n"
+        results_markdown += '\n\tIngredients:\n'
+        for ing in recipe['ingredients']:
+            results_markdown += f'\t* {ing["name"]}\n'
+    results_markdown += "\n"
+
+from IPython.display import display, Markdown, Latex
+display(Markdown(results_markdown))
+```
+
+```{python}
+
+```

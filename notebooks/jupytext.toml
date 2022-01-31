@@ -1,0 +1,2 @@
+# Pair notebooks with markdown versions in Rmd
+formats = "ipynb,Rmd"
