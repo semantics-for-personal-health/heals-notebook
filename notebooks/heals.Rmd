@@ -44,7 +44,7 @@ query = "What beef ribs dishes can I make that do not contain barbecue sauce?"
 #
 # Expand the base query using user data
 #
-expanded_query_res = requests.post(f'{KBQA_URL}/expand_query', json={'question': query, 'persona_num': 1, 'persona': persona_json})
+expanded_query_res = requests.post(f'{KBQA_URL}/expand_query', json={'question': query, 'persona': persona})
 expanded_query = expanded_query_res.text
 expanded_query
 ```
@@ -67,46 +67,21 @@ tags
 ```
 
 ```{python}
+# '1' should include the persona's likes plus any constraints from guidelines
+# '2' should include the persona's dislikes plus any restricted ingredients extracted from the query
 constrained_entities = {
       "1": [
-        "thai sweet chili sauce",
-        "calories from carbohydrates with desired range 35.0 % to 65.0 %"
+        *persona['ingredient_likes'],
+        "calories from carbohydrates with desired range 0.0 % to 45.0 %"
       ],
       "2": [
-        "catsup",
-        "beef broth",
+        *persona['ingredient_dislikes'],
         "barbecue sauce"
       ]
     }
 
 
 json.dumps(constrained_entities)
-```
-
-```{python}
-persona =   {
-    "ingredient_likes": [
-      "thai sweet chili sauce"
-    ],
-    "ingredient_dislikes": [
-      "catsup",
-      "beef broth"
-    ],
-    "constrained_entities": {
-      "1": [
-        "thai sweet chili sauce",
-        "calories from carbohydrates with desired range 35.0 % to 65.0 %"
-      ],
-      "2": [
-        "catsup",
-        "beef broth",
-        "barbecue sauce"
-      ]
-    }
-  }
-#expanded_query = "What are swedish recipes which do not have ingredient bread flour, and have caraway seeds, and do not have bacon, and contain calories from saturated fat with desired range 10.0 % to 35.0 %?"
-expanded_query = "What beef ribs dishes can I make that do not contain barbecue sauce, and have thai sweet chili sauce, and do not have catsup, beef broth, and contain calories from carbohydrates with desired range 35.0 % to 65.0 %?"
-f'{expanded_query=}'
 ```
 
 ```{python}

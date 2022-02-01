@@ -4,4 +4,4 @@ notebooks/personas
 .ipynb_checkpoints
 
 # Notebooks are committed via paired .Rmd files
-.ipynb
+*.ipynb
