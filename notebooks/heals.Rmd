@@ -6,7 +6,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.13.6
+      jupytext_version: 1.13.7
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -35,16 +35,32 @@ with open('personas/1.json') as persona_file:
 # Set the base query
 #
 #query = "what is a breakfast without eggs"
-#query = "What are soul recipes that do not contain egg?"
+#query = "What are soul recipes that do not contain eggs"
 # query = "What are swedish recipes which do not have ingredient bread flour?"
 query = "What beef ribs dishes can I make that do not contain barbecue sauce?"
+```
+
+```{python}
+# TODO: replace this with a loaded JSON file
+# This is just a made up guideline for testing
+guidelines = {
+'DG02': {'total fat':
+      {'percentage': 'calories',
+      'multiplier': 9,
+      'type': 'range',
+      'meal': {
+          'lower': '22',
+          'upper': '33'}
+      }
+  },
+}
 ```
 
 ```{python tags=c()}
 #
 # Expand the base query using user data
 #
-expanded_query_res = requests.post(f'{KBQA_URL}/expand_query', json={'question': query, 'persona': persona})
+expanded_query_res = requests.post(f'{KBQA_URL}/expand_query', json={'question': query, 'persona': persona, 'guidelines': guidelines})
 expanded_query = expanded_query_res.text
 expanded_query
 ```
@@ -62,7 +78,7 @@ print(tags)
 tags = [t for t in tags if t['confidence'] >= 0.9]
 for t in tags:
     t['confidence'] = 1
-#tags = [{'confidence': 1, 'entity': 'tag', 'label': 'swedish', 'value': 'tag2178'}]
+#tags = [{'confidence': 1, 'entity': 'tag', 'label': 'soul', 'value': 'tag2178'}]
 tags 
 ```
 
@@ -70,15 +86,15 @@ tags
 # '1' should include the persona's likes plus any constraints from guidelines
 # '2' should include the persona's dislikes plus any restricted ingredients extracted from the query
 constrained_entities = {
-      "1": [
-        *persona['ingredient_likes'],
-        "calories from carbohydrates with desired range 0.0 % to 45.0 %"
-      ],
-      "2": [
-        *persona['ingredient_dislikes'],
-        "barbecue sauce"
-      ]
-    }
+  "1": [
+    *persona['ingredient_likes'],
+    "calories from carbohydrates with desired range 0.0 % to 45.0 %"
+  ],
+  "2": [
+    *persona['ingredient_dislikes'],
+    "barbecue sauce"
+  ]
+}
 
 
 json.dumps(constrained_entities)
@@ -89,8 +105,6 @@ json.dumps(constrained_entities)
 # Query KBQA using the entities and expanded query
 #
 kbqa_query_data = {
-    "intent": "constraint",
-    "output": "N/A",
     "question": expanded_query,
     # we don't need to expand the query again
     "skip_expansion": True,
@@ -98,6 +112,7 @@ kbqa_query_data = {
     "persona": persona,
     "entities": tags,
     "constrained_entities": constrained_entities,
+    "guidelines": guidelines
     #"similar_recipes": similar_recipes
 }
 kbqa_resp = requests.post(f"{KBQA_URL}/kbqa", json=kbqa_query_data)
