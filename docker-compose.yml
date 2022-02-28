@@ -17,4 +17,7 @@ services:
     build: submodules/kbqa
   mongo:
     image: mongo:5.0.2-focal
-    restart: always
+    volumes:
+      - heals-notebook-mongo:/data/db
+volumes:
+  heals-notebook-mongo:
